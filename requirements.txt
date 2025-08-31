@@ -1,0 +1,41 @@
+# InspireDoc - Requirements
+# Interface utilisateur
+streamlit>=1.28.0
+
+# Traitement de documents
+pypdf>=3.0.0
+pdfplumber>=0.9.0
+python-docx>=0.8.11
+chardet>=5.0.0
+
+# Traitement de texte et Markdown
+markdown>=3.5.0
+Pygments>=2.16.0
+
+# Export PDF
+weasyprint>=60.0
+pdfkit>=1.0.0
+
+# Requêtes HTTP
+requests>=2.31.0
+
+# Traitement de texte avancé (optionnel)
+nltk>=3.8.1
+
+# Utilitaires
+python-dateutil>=2.8.2
+pathlibutil>=0.2.0
+
+# Variables d'environnement
+python-dotenv>=1.0.0
+
+# Logging et debugging
+loguru>=0.7.0
+
+# Type hints
+typing-extensions>=4.8.0
+
+# Note: Pour l'installation complète, exécutez également :
+# - Sur macOS: brew install weasyprint
+# - Sur Ubuntu: sudo apt-get install wkhtmltopdf
+# - Sur Windows: Téléchargez wkhtmltopdf depuis le site officiel
