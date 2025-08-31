@@ -13,9 +13,10 @@
 
    - Formats supportés : PDF, TXT, DOCX.
    - Différenciation entre :
-     - Document(s) source(s)
-     - Document(s) exemple(s)
-     - Nouveau document (demande de génération)
+     - **Document source ancien** : Document de référence original
+     - **Document exemple construit** : Exemple créé à partir de la source (style/structure)
+     - **Nouveau document source** : Nouvelle source pour génération
+   - **Upload multiple** : Plusieurs fichiers par type autorisés
 
 2. **Extraction et nettoyage du contenu :**
 
@@ -32,8 +33,19 @@
 
 4. **Génération via LLM :**
 
-   - Utilisation d’un modèle de langage (GPT-4, LLaMA, ou équivalent).
-   - Retour d’un document généré au format Markdown respectant le style de l’exemple et le contenu des sources.
+   - **Architecture 3+1** :
+     - **Document source ancien** → Contenu de référence
+     - **Document exemple construit** → Style et structure cible
+     - **Nouveau document source** → Nouvelle information à traiter
+     - **Description utilisateur** → Prompt optionnel pour personnaliser
+   - **Prompt intelligent** : Construction automatique basée sur les 3 documents
+   - **Paramètres configurables** :
+     - Température (créativité)
+     - Longueur maximale
+     - Style de génération
+   - **Modèle IA** : GPT-4o via API Azure
+   - **Gestion d'erreurs** : Retry automatique, fallback
+   - Retour d'un document généré au format Markdown respectant le style de l'exemple et le contenu des sources.
 
 5. **Affichage & Export :**
 

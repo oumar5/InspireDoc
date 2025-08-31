@@ -1,39 +1,39 @@
 # InspireDoc - Requirements
 # Interface utilisateur
-streamlit>=1.28.0
+streamlit
 
 # Traitement de documents
-pypdf>=3.0.0
-pdfplumber>=0.9.0
-python-docx>=0.8.11
-chardet>=5.0.0
+pypdf
+pdfplumber
+python-docx
+chardet
 
 # Traitement de texte et Markdown
-markdown>=3.5.0
-Pygments>=2.16.0
+markdown
+Pygments
 
 # Export PDF
-weasyprint>=60.0
-pdfkit>=1.0.0
+weasyprint
+pdfkit
 
 # Requêtes HTTP
-requests>=2.31.0
+requests
 
 # Traitement de texte avancé (optionnel)
-nltk>=3.8.1
+nltk
 
 # Utilitaires
-python-dateutil>=2.8.2
-pathlibutil>=0.2.0
+python-dateutil
+pathlibutil
 
 # Variables d'environnement
-python-dotenv>=1.0.0
+python-dotenv
 
 # Logging et debugging
-loguru>=0.7.0
+loguru
 
 # Type hints
-typing-extensions>=4.8.0
+typing-extensions
 
 # Note: Pour l'installation complète, exécutez également :
 # - Sur macOS: brew install weasyprint

@@ -54,39 +54,49 @@ class DocumentService:
         logger.info("✅ DocumentService initialisé avec succès")
     
     def process_uploaded_files(self, 
-                              source_files: List[Any],
-                              example_files: List[Any]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+                              old_source_files: List[Any],
+                              example_files: List[Any],
+                              new_source_files: List[Any]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
-        Traite les fichiers uploadés (sources et exemples).
+        Traite les fichiers uploadés (3 types de documents).
         
         Args:
-            source_files: Liste des fichiers sources uploadés
-            example_files: Liste des fichiers exemples uploadés
+            old_source_files: Liste des documents sources anciens
+            example_files: Liste des documents exemples construits
+            new_source_files: Liste des nouveaux documents sources
             
         Returns:
-            Tuple (documents_sources, documents_exemples)
+            Tuple (old_sources, examples, new_sources)
         """
         try:
-            processed_sources = []
+            processed_old_sources = []
             processed_examples = []
+            processed_new_sources = []
             
-            # Traitement des fichiers sources
-            for file in source_files:
+            # Traitement des anciens documents sources
+            for file in old_source_files:
                 if file is not None:
-                    result = self._process_single_file(file, "source")
+                    result = self._process_single_file(file, "old_source")
                     if result:
-                        processed_sources.append(result)
+                        processed_old_sources.append(result)
             
-            # Traitement des fichiers exemples
+            # Traitement des documents exemples
             for file in example_files:
                 if file is not None:
                     result = self._process_single_file(file, "example")
                     if result:
                         processed_examples.append(result)
             
-            logger.info(f"Fichiers traités: {len(processed_sources)} sources, {len(processed_examples)} exemples")
+            # Traitement des nouveaux documents sources
+            for file in new_source_files:
+                if file is not None:
+                    result = self._process_single_file(file, "new_source")
+                    if result:
+                        processed_new_sources.append(result)
             
-            return processed_sources, processed_examples
+            logger.info(f"Fichiers traités: {len(processed_old_sources)} anciens, {len(processed_examples)} exemples, {len(processed_new_sources)} nouveaux")
+            
+            return processed_old_sources, processed_examples, processed_new_sources
             
         except Exception as e:
             logger.error(f"Erreur lors du traitement des fichiers: {str(e)}")
@@ -191,19 +201,19 @@ class DocumentService:
             return None
     
     def generate_document(self, 
-                         source_documents: List[Dict[str, Any]],
+                         old_source_documents: List[Dict[str, Any]],
                          example_documents: List[Dict[str, Any]],
-                         generation_request: str,
-                         additional_instructions: Optional[str] = None,
+                         new_source_documents: List[Dict[str, Any]],
+                         user_description: Optional[str] = None,
                          generation_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Génère un nouveau document basé sur les sources et exemples.
+        Génère un nouveau document basé sur l'architecture 3+1.
         
         Args:
-            source_documents: Documents sources traités
-            example_documents: Documents exemples traités
-            generation_request: Demande de génération
-            additional_instructions: Instructions supplémentaires
+            old_source_documents: Documents sources anciens (référence)
+            example_documents: Documents exemples construits (transformation)
+            new_source_documents: Nouveaux documents sources (à traiter)
+            user_description: Description optionnelle de l'utilisateur
             generation_config: Configuration pour la génération
             
         Returns:
@@ -211,19 +221,16 @@ class DocumentService:
         """
         try:
             # Validation des entrées
-            if not source_documents and not example_documents:
-                raise ValueError("Au moins un document source ou exemple est requis")
+            if not old_source_documents and not example_documents and not new_source_documents:
+                raise ValueError("Au moins un document de chaque type est recommandé")
             
-            if not generation_request.strip():
-                raise ValueError("La demande de génération ne peut pas être vide")
-            
-            # Construction du prompt
-            logger.info("Construction du prompt de génération...")
-            prompt_data = self.prompt_builder.build_prompt(
-                source_documents=source_documents,
+            # Construction du prompt avec la nouvelle logique 3+1
+            logger.info("Construction du prompt de génération avec architecture 3+1...")
+            prompt_data = self.prompt_builder.build_transformation_prompt(
+                old_source_documents=old_source_documents,
                 example_documents=example_documents,
-                generation_request=generation_request,
-                additional_instructions=additional_instructions
+                new_source_documents=new_source_documents,
+                user_description=user_description
             )
             
             # Validation du prompt
@@ -244,10 +251,10 @@ class DocumentService:
             # Métadonnées de la génération
             generation_metadata = {
                 'generated_at': datetime.now().isoformat(),
-                'source_count': len(source_documents),
+                'old_source_count': len(old_source_documents),
                 'example_count': len(example_documents),
-                'generation_request': generation_request,
-                'additional_instructions': additional_instructions,
+                'new_source_count': len(new_source_documents),
+                'user_description': user_description,
                 'prompt_metadata': prompt_data['metadata'],
                 'llm_metadata': generation_result['metadata'],
                 'content_stats': {

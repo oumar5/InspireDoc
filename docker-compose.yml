@@ -1,0 +1,52 @@
+services:
+  inspiredoc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      # Montage du code source pour le hot reload
+      - .:/app
+      # Montage des dossiers de données (persistance)
+      - ./data:/app/data
+      # Exclure les dossiers Python cache
+      - /app/__pycache__
+      - /app/.pytest_cache
+    environment:
+      # Variables d'environnement pour GPT-4o
+      - GPT4O_API_KEY=${GPT4O_API_KEY}
+      - GPT4O_ENDPOINT=${GPT4O_ENDPOINT}
+      
+      # Configuration Streamlit pour le développement
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=poll
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_SERVER_RUN_ON_SAVE=true
+      
+      # Configuration Python
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    
+    # Healthcheck pour vérifier que l'application fonctionne
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Réseau par défaut
+networks:
+  default:
+    name: inspiredoc-network
+
+# Volumes nommés pour la persistance des données
+volumes:
+  inspiredoc_data:
+    driver: local

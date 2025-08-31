@@ -17,51 +17,212 @@ st.set_page_config(
 # CSS personnalisé
 st.markdown("""
 <style>
+    /* Adaptation automatique aux thèmes sombre/clair */
     .main-header {
         font-size: 3rem;
         font-weight: bold;
         text-align: center;
-        color: #2c3e50;
+        color: var(--text-color, #2c3e50);
         margin-bottom: 2rem;
     }
     
     .sub-header {
         font-size: 1.5rem;
-        color: #34495e;
+        color: var(--text-color-secondary, #34495e);
         text-align: center;
         margin-bottom: 3rem;
     }
     
     .feature-box {
-        background-color: #f8f9fa;
+        background-color: var(--background-color-secondary, #f8f9fa);
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 4px solid #3498db;
+        border-left: 4px solid var(--primary-color, #3498db);
         margin: 1rem 0;
+        color: var(--text-color, #2c3e50);
     }
     
     .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
+        background-color: var(--success-bg, #d4edda);
+        border: 1px solid var(--success-border, #c3e6cb);
         border-radius: 5px;
         padding: 1rem;
         margin: 1rem 0;
+        color: var(--success-text, #155724);
     }
     
     .error-box {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
+        background-color: var(--error-bg, #f8d7da);
+        border: 1px solid var(--error-border, #f5c6cb);
         border-radius: 5px;
         padding: 1rem;
         margin: 1rem 0;
+        color: var(--error-text, #721c24);
     }
     
     .info-box {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
+        background-color: var(--info-bg, #d1ecf1);
+        border: 1px solid var(--info-border, #bee5eb);
         border-radius: 5px;
         padding: 1rem;
         margin: 1rem 0;
+        color: var(--info-text, #0c5460);
+    }
+    
+    /* Thème sombre */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --text-color: #ffffff;
+            --text-color-secondary: #b0b0b0;
+            --background-color-secondary: #2d3748;
+            --primary-color: #4299e1;
+            --success-bg: #2d5a3d;
+            --success-border: #4a7c59;
+            --success-text: #9ae6b4;
+            --error-bg: #5a2d2d;
+            --error-border: #7c4a4a;
+            --error-text: #feb2b2;
+            --info-bg: #2d4a5a;
+            --info-border: #4a6c7c;
+            --info-text: #90cdf4;
+        }
+    }
+    
+    /* Thème clair */
+    @media (prefers-color-scheme: light) {
+        :root {
+            --text-color: #2c3e50;
+            --text-color-secondary: #34495e;
+            --background-color-secondary: #f8f9fa;
+            --primary-color: #3498db;
+            --success-bg: #d4edda;
+            --success-border: #c3e6cb;
+            --success-text: #155724;
+            --error-bg: #f8d7da;
+            --error-border: #f5c6cb;
+            --error-text: #721c24;
+            --info-bg: #d1ecf1;
+            --info-border: #bee5eb;
+            --info-text: #0c5460;
+        }
+    }
+    
+    /* Adaptation Streamlit thème sombre */
+    [data-theme="dark"] {
+        --text-color: #ffffff;
+        --text-color-secondary: #b0b0b0;
+        --background-color-secondary: #2d3748;
+        --primary-color: #4299e1;
+        --success-bg: #2d5a3d;
+        --success-border: #4a7c59;
+        --success-text: #9ae6b4;
+        --error-bg: #5a2d2d;
+        --error-border: #7c4a4a;
+        --error-text: #feb2b2;
+        --info-bg: #2d4a5a;
+        --info-border: #4a6c7c;
+        --info-text: #90cdf4;
+    }
+    
+    /* Adaptation Streamlit thème clair */
+    [data-theme="light"] {
+        --text-color: #2c3e50;
+        --text-color-secondary: #34495e;
+        --background-color-secondary: #f8f9fa;
+        --primary-color: #3498db;
+        --success-bg: #d4edda;
+        --success-border: #c3e6cb;
+        --success-text: #155724;
+        --error-bg: #f8d7da;
+        --error-border: #f5c6cb;
+        --error-text: #721c24;
+        --info-bg: #d1ecf1;
+        --info-border: #bee5eb;
+        --info-text: #0c5460;
+    }
+    
+    /* Amélioration du rendu Markdown */
+    .markdown-content {
+        line-height: 1.6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+        color: var(--text-color, #2c3e50);
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content h1 {
+        font-size: 2rem;
+        border-bottom: 2px solid var(--primary-color, #3498db);
+        padding-bottom: 0.3rem;
+    }
+    
+    .markdown-content h2 {
+        font-size: 1.5rem;
+        border-bottom: 1px solid var(--text-color-secondary, #34495e);
+        padding-bottom: 0.2rem;
+    }
+    
+    .markdown-content h3 {
+        font-size: 1.25rem;
+    }
+    
+    .markdown-content p {
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+    
+    .markdown-content ul, .markdown-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .markdown-content li {
+        margin-bottom: 0.25rem;
+    }
+    
+    .markdown-content blockquote {
+        border-left: 4px solid var(--primary-color, #3498db);
+        margin: 1rem 0;
+        padding-left: 1rem;
+        font-style: italic;
+        background-color: var(--background-color-secondary, #f8f9fa);
+        padding: 0.5rem 1rem;
+    }
+    
+    .markdown-content code {
+        background-color: var(--background-color-secondary, #f8f9fa);
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .markdown-content pre {
+        background-color: var(--background-color-secondary, #f8f9fa);
+        padding: 1rem;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 1rem 0;
+    }
+    
+    .markdown-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+    }
+    
+    .markdown-content th, .markdown-content td {
+        border: 1px solid var(--text-color-secondary, #34495e);
+        padding: 0.5rem;
+        text-align: left;
+    }
+    
+    .markdown-content th {
+        background-color: var(--primary-color, #3498db);
+        color: white;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -79,11 +240,33 @@ def main():
     with st.sidebar:
         st.title("Navigation")
         
-        # Menu de navigation
-        page = st.selectbox(
+        # Menu de navigation avec boutons radio
+        page = st.radio(
             "Choisir une page",
-            ["🏠 Accueil", "⚡ Génération", "⚙️ Paramètres", "ℹ️ À propos"]
+            ["🏠 Accueil", "⚡ Génération", "⚙️ Paramètres", "ℹ️ À propos"],
+            index=0
         )
+        
+        # Affichage du statut
+        st.markdown("---")
+        st.markdown("**🔧 Statut**")
+        
+        try:
+            from core.services.document_service import DocumentService
+            service = DocumentService()
+            status = service.get_service_status()
+            
+            if status.get('service_initialized', False):
+                st.success("✅ Service OK")
+            else:
+                st.error("❌ Service KO")
+                
+            if status.get('llm_connection', False):
+                st.success("✅ LLM OK")
+            else:
+                st.warning("⚠️ LLM Config")
+        except Exception:
+            st.error("❌ Erreur init")
     
     # Routage des pages
     if page == "🏠 Accueil":

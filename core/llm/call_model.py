@@ -64,8 +64,11 @@ class LLMCaller:
             if config:
                 call_config.update(config)
             
-            # Construire l'URL
-            url = f"{self.endpoint}/deployments/{self.model_name}/chat/completions?api-version=2024-06-01"
+            # Construire l'URL - utiliser l'endpoint complet s'il contient déjà le chemin
+            if "/deployments/" in self.endpoint:
+                url = self.endpoint
+            else:
+                url = f"{self.endpoint}/deployments/{self.model_name}/chat/completions?api-version=2024-06-01"
             
             # Headers
             headers = {

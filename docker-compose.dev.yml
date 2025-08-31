@@ -1,0 +1,82 @@
+services:
+  inspiredoc-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8501:8501"
+    volumes:
+      # Montage complet du code source pour hot reload
+      - .:/app
+      # Montage des dossiers de données
+      - ./data:/app/data
+      # Montage du cache pip pour accélérer les rebuilds
+      - pip-cache:/root/.cache/pip
+      # Exclure les dossiers de cache Python
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/core/__pycache__
+      - /app/config/__pycache__
+      - /app/pages/__pycache__
+    environment:
+      # Variables d'environnement pour GPT-4o
+      - GPT4O_API_KEY=${GPT4O_API_KEY}
+      - GPT4O_ENDPOINT=${GPT4O_ENDPOINT}
+      
+      # Configuration Streamlit pour le développement
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=poll
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_SERVER_RUN_ON_SAVE=true
+      - STREAMLIT_LOGGER_LEVEL=debug
+      
+      # Configuration Python pour le développement
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - INSPIREDOC_DEBUG=true
+      - INSPIREDOC_LOG_LEVEL=DEBUG
+    env_file:
+      - .env
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    
+    # Commande de développement avec auto-reload
+    command: [
+      "streamlit", "run", "app.py",
+      "--server.address", "0.0.0.0",
+      "--server.port", "8501",
+      "--server.headless", "true",
+      "--server.fileWatcherType", "poll",
+      "--server.runOnSave", "true",
+      "--logger.level", "debug"
+    ]
+    
+    # Dépendances de service (si nécessaire)
+    depends_on:
+      - redis-cache
+    
+  # Service Redis pour le cache (optionnel)
+  redis-cache:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+# Volumes nommés
+volumes:
+  pip-cache:
+    driver: local
+  redis-data:
+    driver: local
+  inspiredoc_data:
+    driver: local
+
+# Réseau de développement
+networks:
+  default:
+    name: inspiredoc-dev-network

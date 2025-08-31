@@ -32,94 +32,110 @@ class PromptBuilder:
         Initialise les templates de prompts.
         """
         self.system_prompt = """
-Vous êtes un assistant IA spécialisé dans la génération de documents. Votre tâche est de créer un nouveau document au format Markdown en vous inspirant du style et de la structure d'un document exemple, tout en utilisant le contenu des documents sources fournis.
+Vous êtes un assistant IA spécialisé dans la génération de documents avec l'architecture 3+1. Votre tâche est d'analyser une transformation (Document Ancien → Document Exemple) et d'appliquer cette même transformation sur un nouveau document source.
+
+Méthodologie:
+1. **ANALYSER** : Comprenez comment le Document Ancien a été transformé en Document Exemple
+2. **IDENTIFIER** : Repérez les patterns de transformation (style, structure, ton, format)
+3. **APPLIQUER** : Utilisez ces mêmes patterns pour transformer le Nouveau Document Source
+4. **GÉNÉRER** : Créez un document Markdown cohérent suivant la transformation identifiée
 
 Instructions importantes:
-1. Respectez le style, la structure et le format du document exemple
-2. Utilisez uniquement les informations des documents sources pour le contenu
-3. Générez un document cohérent et bien structuré en Markdown
-4. Préservez les éléments de mise en forme (titres, listes, tableaux, etc.)
-5. Assurez-vous que le document généré soit complet et professionnel
-6. Ne mentionnez pas les documents sources dans le contenu généré
+- Respectez fidèlement le pattern de transformation observé
+- Générez un document au format Markdown bien structuré
+- Préservez les éléments de mise en forme appropriés
+- Assurez-vous que le résultat soit cohérent et professionnel
+- Intégrez les instructions utilisateur si fournies
 """
         
-        self.user_prompt_template = """
-## DOCUMENT EXEMPLE (Style et structure à respecter):
+        self.transformation_prompt_template = """
+## ANALYSE DE TRANSFORMATION
+
+### DOCUMENT SOURCE ANCIEN (Référence originale):
+{old_source_content}
+
+### DOCUMENT EXEMPLE CONSTRUIT (Transformation appliquée):
 {example_content}
 
-## DOCUMENTS SOURCES (Contenu à utiliser):
-{source_content}
+### NOUVEAU DOCUMENT SOURCE (À transformer):
+{new_source_content}
 
-## DEMANDE DE GÉNÉRATION:
-{generation_request}
+## INSTRUCTIONS
 
-## INSTRUCTIONS SPÉCIFIQUES:
-- Format de sortie: Markdown uniquement
-- Longueur approximative: {target_length}
-- Style: Suivre exactement le document exemple
-- Contenu: Basé sur les documents sources
+Analysez comment le Document Source Ancien a été transformé en Document Exemple Construit, puis appliquez cette même transformation au Nouveau Document Source.
 
-Générez maintenant le document demandé:
+{user_instructions}
+
+## GÉNÉRATION DEMANDÉE:
+Générez maintenant un nouveau document au format Markdown en appliquant la même transformation que celle observée entre le Document Source Ancien et le Document Exemple Construit.
+
+Le document généré doit :
+- Suivre le même pattern de transformation
+- Être cohérent et bien structuré
+- Respecter le format Markdown
+- Intégrer les instructions utilisateur si fournies
 """
     
-    def build_prompt(self, 
-                    source_documents: List[Dict[str, Any]],
-                    example_documents: List[Dict[str, Any]],
-                    generation_request: str,
-                    target_length: str = "similaire à l'exemple",
-                    additional_instructions: Optional[str] = None) -> Dict[str, Any]:
+    def build_transformation_prompt(self, 
+                                   old_source_documents: List[Dict[str, Any]],
+                                   example_documents: List[Dict[str, Any]],
+                                   new_source_documents: List[Dict[str, Any]],
+                                   user_description: Optional[str] = None) -> Dict[str, Any]:
         """
-        Construit un prompt complet pour la génération de document.
+        Construit un prompt pour la transformation 3+1.
         
         Args:
-            source_documents: Liste des documents sources
-            example_documents: Liste des documents exemples
-            generation_request: Demande spécifique de génération
-            target_length: Longueur cible du document
-            additional_instructions: Instructions supplémentaires
+            old_source_documents: Documents sources anciens (référence)
+            example_documents: Documents exemples construits (transformation)
+            new_source_documents: Nouveaux documents sources (à traiter)
+            user_description: Description optionnelle de l'utilisateur
             
         Returns:
             Dictionnaire contenant le prompt et les métadonnées
         """
         try:
-            # Préparer le contenu des sources
-            source_content = self._prepare_source_content(source_documents)
-            
-            # Préparer le contenu des exemples
+            # Préparer le contenu des 3 types de documents
+            old_source_content = self._prepare_source_content(old_source_documents)
             example_content = self._prepare_example_content(example_documents)
+            new_source_content = self._prepare_source_content(new_source_documents)
+            
+            # Préparer les instructions utilisateur
+            user_instructions = ""
+            if user_description and user_description.strip():
+                user_instructions = f"### INSTRUCTIONS UTILISATEUR:\n{user_description.strip()}\n"
             
             # Construire le prompt utilisateur
-            user_prompt = self.user_prompt_template.format(
+            user_prompt = self.transformation_prompt_template.format(
+                old_source_content=old_source_content,
                 example_content=example_content,
-                source_content=source_content,
-                generation_request=generation_request,
-                target_length=target_length
+                new_source_content=new_source_content,
+                user_instructions=user_instructions
             )
-            
-            # Ajouter les instructions supplémentaires si fournies
-            if additional_instructions:
-                user_prompt += f"\n\n## INSTRUCTIONS SUPPLÉMENTAIRES:\n{additional_instructions}"
             
             # Vérifier la longueur du prompt
             total_length = len(self.system_prompt) + len(user_prompt)
             
             if total_length > self.max_context_length:
                 logger.warning(f"Prompt trop long ({total_length} caractères), troncature nécessaire")
-                user_prompt = self._truncate_prompt(user_prompt, source_content, example_content)
+                user_prompt = self._truncate_transformation_prompt(
+                    user_prompt, old_source_content, example_content, new_source_content
+                )
             
             # Métadonnées du prompt
             prompt_metadata = {
                 "total_length": len(self.system_prompt) + len(user_prompt),
                 "system_prompt_length": len(self.system_prompt),
                 "user_prompt_length": len(user_prompt),
-                "source_documents_count": len(source_documents),
+                "old_source_documents_count": len(old_source_documents),
                 "example_documents_count": len(example_documents),
+                "new_source_documents_count": len(new_source_documents),
                 "created_at": datetime.now().isoformat(),
                 "language": self.language,
-                "truncated": total_length > self.max_context_length
+                "truncated": total_length > self.max_context_length,
+                "user_description": user_description
             }
             
-            logger.info(f"Prompt construit: {prompt_metadata['total_length']} caractères, {prompt_metadata['source_documents_count']} sources, {prompt_metadata['example_documents_count']} exemples")
+            logger.info(f"Prompt construit: {prompt_metadata['total_length']} caractères, {prompt_metadata['old_source_documents_count']} anciennes sources, {prompt_metadata['example_documents_count']} exemples, {prompt_metadata['new_source_documents_count']} nouvelles sources")
             
             return {
                 "system_prompt": self.system_prompt,
@@ -128,7 +144,7 @@ Générez maintenant le document demandé:
             }
             
         except Exception as e:
-            logger.error(f"Erreur lors de la construction du prompt: {str(e)}")
+            logger.error(f"Erreur lors de la construction du prompt de transformation: {str(e)}")
             raise
     
     def _prepare_source_content(self, source_documents: List[Dict[str, Any]]) -> str:
@@ -203,41 +219,62 @@ Générez maintenant le document demandé:
         
         return "\n\n".join(formatted_examples)
     
-    def _truncate_prompt(self, user_prompt: str, source_content: str, example_content: str) -> str:
+    def _truncate_transformation_prompt(self, user_prompt: str, old_source_content: str, 
+                                       example_content: str, new_source_content: str) -> str:
         """
-        Tronque le prompt s'il est trop long.
+        Tronque le prompt de transformation si nécessaire.
         
         Args:
-            user_prompt: Prompt utilisateur original
-            source_content: Contenu des sources
+            user_prompt: Prompt utilisateur complet
+            old_source_content: Contenu des sources anciennes
             example_content: Contenu des exemples
+            new_source_content: Contenu des nouvelles sources
             
         Returns:
             Prompt tronqué
         """
-        available_length = self.max_context_length - len(self.system_prompt) - 500  # Marge de sécurité
-        
-        # Répartir l'espace disponible: 40% pour les exemples, 50% pour les sources, 10% pour le reste
-        example_max = int(available_length * 0.4)
-        source_max = int(available_length * 0.5)
-        
-        # Tronquer le contenu des exemples
-        if len(example_content) > example_max:
-            example_content = example_content[:example_max] + "\n[...contenu tronqué...]"
-        
-        # Tronquer le contenu des sources
-        if len(source_content) > source_max:
-            source_content = source_content[:source_max] + "\n[...contenu tronqué...]"
-        
-        # Reconstruire le prompt avec le contenu tronqué
-        truncated_prompt = self.user_prompt_template.format(
-            example_content=example_content,
-            source_content=source_content,
-            generation_request="[Demande de génération maintenue]",
-            target_length="similaire à l'exemple"
-        )
-        
-        return truncated_prompt
+        try:
+            # Calculer l'espace disponible
+            available_space = self.max_context_length - len(self.system_prompt) - 500
+            
+            if len(user_prompt) <= available_space:
+                return user_prompt
+            
+            # Stratégie de troncature: réduire proportionnellement les 3 contenus
+            total_content = len(old_source_content) + len(example_content) + len(new_source_content)
+            
+            if total_content == 0:
+                return user_prompt[:available_space]
+            
+            old_ratio = len(old_source_content) / total_content
+            example_ratio = len(example_content) / total_content
+            new_ratio = len(new_source_content) / total_content
+            
+            # Calculer les nouvelles tailles
+            content_space = available_space - 1000  # Espace pour le template
+            new_old_length = int(content_space * old_ratio)
+            new_example_length = int(content_space * example_ratio)
+            new_new_length = int(content_space * new_ratio)
+            
+            # Tronquer les contenus
+            truncated_old = old_source_content[:new_old_length] + "\n[...tronqué...]" if len(old_source_content) > new_old_length else old_source_content
+            truncated_example = example_content[:new_example_length] + "\n[...tronqué...]" if len(example_content) > new_example_length else example_content
+            truncated_new = new_source_content[:new_new_length] + "\n[...tronqué...]" if len(new_source_content) > new_new_length else new_source_content
+            
+            # Reconstruire le prompt avec le contenu tronqué
+            truncated_prompt = self.transformation_prompt_template.format(
+                old_source_content=truncated_old,
+                example_content=truncated_example,
+                new_source_content=truncated_new,
+                user_instructions=""
+            )
+            
+            logger.info(f"Prompt tronqué de {len(user_prompt)} à {len(truncated_prompt)} caractères")
+            return truncated_prompt
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de la troncature: {str(e)}")
+            return user_prompt[:available_space]
     
     def build_simple_prompt(self, content: str, task: str) -> Dict[str, Any]:
         """
