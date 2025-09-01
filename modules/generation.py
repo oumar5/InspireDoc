@@ -69,33 +69,75 @@ def show_upload_section():
     
     with col1:
         st.markdown("**📜 Document source ancien**")
-        old_source_files = st.file_uploader(
-            "Document de référence original",
-            type=['pdf', 'txt', 'docx'],
-            accept_multiple_files=True,
-            key="old_source_files",
-            help="Document original servant de base de référence"
-        )
+        
+        # Onglets pour upload ou saisie texte
+        tab1, tab2 = st.tabs(["📁 Upload", "✏️ Texte"])
+        
+        with tab1:
+            old_source_files = st.file_uploader(
+                "Document de référence original",
+                type=['pdf', 'txt', 'docx'],
+                accept_multiple_files=True,
+                key="old_source_files",
+                help="Document original servant de base de référence"
+            )
+        
+        with tab2:
+            old_source_text = st.text_area(
+                "Saisir le contenu directement",
+                height=200,
+                key="old_source_text",
+                help="Tapez ou collez votre texte de référence",
+                placeholder="Entrez votre document source ancien ici..."
+            )
     
     with col2:
         st.markdown("**🎨 Document exemple construit**")
-        example_files = st.file_uploader(
-            "Exemple créé à partir de la source",
-            type=['pdf', 'txt', 'docx'],
-            accept_multiple_files=True,
-            key="example_files",
-            help="Exemple montrant la transformation souhaitée (ancien → exemple)"
-        )
+        
+        # Onglets pour upload ou saisie texte
+        tab1, tab2 = st.tabs(["📁 Upload", "✏️ Texte"])
+        
+        with tab1:
+            example_files = st.file_uploader(
+                "Exemple créé à partir de la source",
+                type=['pdf', 'txt', 'docx'],
+                accept_multiple_files=True,
+                key="example_files",
+                help="Exemple montrant la transformation souhaitée (ancien → exemple)"
+            )
+        
+        with tab2:
+            example_text = st.text_area(
+                "Saisir l'exemple directement",
+                height=200,
+                key="example_text",
+                help="Tapez ou collez votre exemple construit",
+                placeholder="Entrez votre document exemple ici..."
+            )
     
     with col3:
         st.markdown("**📄 Nouveau document source**")
-        new_source_files = st.file_uploader(
-            "Nouvelle information à traiter",
-            type=['pdf', 'txt', 'docx'],
-            accept_multiple_files=True,
-            key="new_source_files",
-            help="Nouveau contenu qui subira la même transformation"
-        )
+        
+        # Onglets pour upload ou saisie texte
+        tab1, tab2 = st.tabs(["📁 Upload", "✏️ Texte"])
+        
+        with tab1:
+            new_source_files = st.file_uploader(
+                "Nouvelle information à traiter",
+                type=['pdf', 'txt', 'docx'],
+                accept_multiple_files=True,
+                key="new_source_files",
+                help="Nouveau contenu qui subira la même transformation"
+            )
+        
+        with tab2:
+            new_source_text = st.text_area(
+                "Saisir le nouveau contenu directement",
+                height=200,
+                key="new_source_text",
+                help="Tapez ou collez votre nouveau contenu",
+                placeholder="Entrez votre nouveau document source ici..."
+            )
     
     # Zone de description optionnelle
     st.markdown("**💬 Description personnalisée (optionnel)**")
@@ -108,13 +150,18 @@ def show_upload_section():
     )
     
     # Bouton de traitement
-    if st.button("🔄 Traiter les fichiers", type="primary"):
-        if not old_source_files and not example_files and not new_source_files:
-            st.error("Veuillez uploader au moins un document dans chaque catégorie pour la génération.")
+    if st.button("🔄 Traiter les documents", type="primary"):
+        # Vérification des contenus (fichiers ou texte)
+        has_old_content = bool(old_source_files or st.session_state.get('old_source_text', '').strip())
+        has_example_content = bool(example_files or st.session_state.get('example_text', '').strip())
+        has_new_content = bool(new_source_files or st.session_state.get('new_source_text', '').strip())
+        
+        if not has_old_content and not has_example_content and not has_new_content:
+            st.error("Veuillez fournir au moins un contenu (fichier ou texte) dans chaque catégorie.")
             return
         
-        if not old_source_files or not example_files or not new_source_files:
-            st.warning("⚠️ Pour une génération optimale, il est recommandé d'avoir les 3 types de documents.")
+        if not has_old_content or not has_example_content or not has_new_content:
+            st.warning("⚠️ Pour une génération optimale, il est recommandé d'avoir les 3 types de contenus.")
             if not st.button("Continuer quand même", key="continue_anyway"):
                 return
         
@@ -122,11 +169,14 @@ def show_upload_section():
             try:
                 logger.info(f"Début du traitement des fichiers - Anciens: {len(old_source_files or [])}, Exemples: {len(example_files or [])}, Nouveaux: {len(new_source_files or [])}")
                 
-                # Traitement des fichiers avec la nouvelle architecture 3+1
+                # Traitement des fichiers et textes avec la nouvelle architecture 3+1
                 processed_old_sources, processed_examples, processed_new_sources = st.session_state.document_service.process_uploaded_files(
                     old_source_files or [],
                     example_files or [],
-                    new_source_files or []
+                    new_source_files or [],
+                    st.session_state.get('old_source_text', ''),
+                    st.session_state.get('example_text', ''),
+                    st.session_state.get('new_source_text', '')
                 )
                 
                 logger.info(f"Fichiers traités avec succès - Anciens: {len(processed_old_sources)}, Exemples: {len(processed_examples)}, Nouveaux: {len(processed_new_sources)}")

@@ -5,6 +5,59 @@ def show_about_interface():
     """
     Interface de la page À propos.
     """
+    # CSS adaptatif pour le mode sombre/clair
+    st.markdown("""
+    <style>
+    .feature-card {
+        background-color: var(--background-color-secondary, #f8f9fa);
+        color: var(--text-color, #2c3e50);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color, #3498db);
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card h4 {
+        color: var(--text-color, #2c3e50);
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-card p {
+        color: var(--text-color-secondary, #34495e);
+        margin-bottom: 0;
+    }
+    
+    /* Thème sombre */
+    @media (prefers-color-scheme: dark) {
+        .feature-card {
+            background-color: var(--background-color-secondary, #2d3748);
+            color: var(--text-color, #ffffff);
+        }
+        .feature-card h4 {
+            color: var(--text-color, #ffffff);
+        }
+        .feature-card p {
+            color: var(--text-color-secondary, #b0b0b0);
+        }
+    }
+    
+    /* Adaptation Streamlit thème sombre */
+    [data-theme="dark"] .feature-card {
+        background-color: #2d3748;
+        color: #ffffff;
+    }
+    
+    [data-theme="dark"] .feature-card h4 {
+        color: #ffffff;
+    }
+    
+    [data-theme="dark"] .feature-card p {
+        color: #b0b0b0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     st.header("ℹ️ À propos d'InspireDoc")
     
     # Présentation principale
@@ -29,28 +82,35 @@ def show_main_presentation():
     st.markdown("""
     ## 📝 InspireDoc - Générateur intelligent de documents
     
-    InspireDoc est une application web innovante qui utilise l'intelligence artificielle pour générer 
-    automatiquement des documents en s'inspirant d'exemples existants et en utilisant vos documents sources.
+    InspireDoc est une application web révolutionnaire qui utilise l'**architecture 3+1** et l'intelligence 
+    artificielle pour générer automatiquement des documents en analysant et appliquant des transformations intelligentes.
     
-    ### 🎯 Objectif
+    ### 🎯 Innovation : Architecture 3+1
     
-    Simplifier et automatiser la création de documents professionnels en combinant :
-    - **Le contenu** de vos documents sources
-    - **Le style et la structure** de vos documents exemples
-    - **La puissance de l'IA** pour une génération intelligente
+    InspireDoc révolutionne la génération de documents avec son approche unique :
+    
+    1. **📜 Document source ancien** - Référence originale
+    2. **🎨 Document exemple construit** - Transformation appliquée sur la source
+    3. **📄 Nouveau document source** - Nouvelle information à traiter
+    4. **💬 Description utilisateur** - Instructions personnalisées (optionnel)
+    
+    ### 🧠 Intelligence de transformation
+    
+    L'IA **analyse** comment le document ancien a été transformé en exemple, puis **applique** 
+    cette même transformation sur vos nouveaux documents sources.
     """)
     
     # Statistiques du projet
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Version", "1.0.0 MVP")
+        st.metric("Version", "2.0.0 Architecture 3+1")
     with col2:
-        st.metric("Formats supportés", "3")
+        st.metric("Formats supportés", "3 (PDF, TXT, DOCX)")
     with col3:
-        st.metric("Modules", "10+")
+        st.metric("Intelligence", "Transformation IA")
     with col4:
-        st.metric("Développement", "2024")
+        st.metric("Thèmes", "Sombre/Clair adaptatif")
 
 def show_features():
     """
@@ -60,34 +120,34 @@ def show_features():
     
     features = [
         {
+            "icon": "🧠",
+            "title": "Architecture 3+1 révolutionnaire",
+            "description": "Analyse les transformations et les applique intelligemment sur de nouveaux documents"
+        },
+        {
             "icon": "📄",
-            "title": "Upload multi-format",
-            "description": "Supporté: PDF, TXT, DOCX avec extraction intelligente du contenu"
+            "title": "Upload intelligent 3 zones",
+            "description": "Source ancien, exemple construit, nouveau source + description optionnelle"
         },
         {
-            "icon": "🧹",
-            "title": "Nettoyage automatique",
-            "description": "Suppression des métadonnées, normalisation du texte, optimisation pour l'IA"
-        },
-        {
-            "icon": "🤖",
-            "title": "Génération IA",
-            "description": "Utilise GPT-4o pour créer des documents respectant style et contenu"
+            "icon": "🔄",
+            "title": "Transformation contextuelle",
+            "description": "L'IA comprend COMMENT transformer, pas seulement QUOI transformer"
         },
         {
             "icon": "🎨",
-            "title": "Rendu Markdown",
-            "description": "Affichage élégant avec prévisualisation en temps réel"
+            "title": "Rendu Markdown amélioré",
+            "description": "Styles adaptatifs, thèmes sombre/clair, rendu professionnel"
         },
         {
             "icon": "📥",
             "title": "Export multi-format",
-            "description": "Export en PDF et DOCX avec préservation de la mise en forme"
+            "description": "PDF et DOCX avec préservation complète des styles et mise en forme"
         },
         {
-            "icon": "⚙️",
-            "title": "Configuration avancée",
-            "description": "Paramètres personnalisables pour la génération et l'interface"
+            "icon": "🐳",
+            "title": "Docker & Hot Reload",
+            "description": "Développement containerisé avec rechargement automatique des modifications"
         }
     ]
     
@@ -99,13 +159,7 @@ def show_features():
             if i < len(features):
                 feature = features[i]
                 st.markdown(f"""
-                <div style="
-                    background-color: #f8f9fa;
-                    padding: 1.5rem;
-                    border-radius: 10px;
-                    border-left: 4px solid #3498db;
-                    margin: 1rem 0;
-                ">
+                <div class="feature-card">
                     <h4>{feature['icon']} {feature['title']}</h4>
                     <p>{feature['description']}</p>
                 </div>
@@ -115,13 +169,7 @@ def show_features():
             if i + 1 < len(features):
                 feature = features[i + 1]
                 st.markdown(f"""
-                <div style="
-                    background-color: #f8f9fa;
-                    padding: 1.5rem;
-                    border-radius: 10px;
-                    border-left: 4px solid #3498db;
-                    margin: 1rem 0;
-                ">
+                <div class="feature-card">
                     <h4>{feature['icon']} {feature['title']}</h4>
                     <p>{feature['description']}</p>
                 </div>
@@ -133,25 +181,44 @@ def show_technical_info():
     """
     st.subheader("🔧 Architecture technique")
     
+    with st.expander("🧠 Innovation : Architecture 3+1", expanded=True):
+        st.markdown("""
+        ### Révolution dans la génération de documents
+        
+        **Méthodologie unique :**
+        1. **ANALYSER** : Comprendre la transformation (Ancien → Exemple)
+        2. **IDENTIFIER** : Repérer les patterns (style, structure, ton, format)
+        3. **APPLIQUER** : Utiliser ces patterns sur le nouveau document
+        4. **GÉNÉRER** : Créer un résultat cohérent suivant la transformation
+        
+        **Avantages :**
+        - ✅ L'IA comprend le **COMMENT** transformer, pas seulement le **QUOI**
+        - ✅ Génération contextuelle et intelligente
+        - ✅ Respect fidèle des patterns de transformation
+        - ✅ Personnalisation via description utilisateur
+        """)
+    
     with st.expander("Stack technologique", expanded=False):
         st.markdown("""
         ### Langage et Framework
         - **Python 3.10+** - Langage principal
-        - **Streamlit** - Interface utilisateur web
+        - **Streamlit** - Interface utilisateur web moderne
+        - **Docker** - Containerisation et déploiement
         
         ### Traitement de documents
-        - **pypdf/pdfplumber** - Extraction PDF
-        - **python-docx** - Traitement DOCX
-        - **chardet** - Détection d'encodage
+        - **pypdf/pdfplumber** - Extraction PDF intelligente
+        - **python-docx** - Traitement DOCX complet
+        - **chardet** - Détection d'encodage automatique
         
         ### Intelligence Artificielle
-        - **OpenAI GPT-4o** - Modèle de langage
-        - **Azure OpenAI** - Service cloud
+        - **OpenAI GPT-4o** - Modèle de langage avancé
+        - **Azure OpenAI** - Service cloud sécurisé
+        - **Architecture 3+1** - Innovation InspireDoc
         
-        ### Rendu et Export
-        - **markdown** - Traitement Markdown
-        - **weasyprint/pdfkit** - Export PDF
-        - **python-docx** - Export DOCX
+        ### Interface et Rendu
+        - **CSS adaptatif** - Thèmes sombre/clair automatiques
+        - **Markdown enrichi** - Rendu professionnel
+        - **Hot reload** - Développement optimisé
         """)
     
     with st.expander("Architecture modulaire", expanded=False):
@@ -187,30 +254,34 @@ def show_usage_guide():
     """
     st.subheader("📖 Guide d'utilisation")
     
-    with st.expander("Démarrage rapide", expanded=True):
+    with st.expander("🚀 Workflow Architecture 3+1", expanded=True):
         st.markdown("""
-        ### 1. Configuration initiale
+        ### Nouveau workflow révolutionnaire
         
-        Avant d'utiliser InspireDoc, configurez vos variables d'environnement :
+        **1. 📜 Document source ancien**
+        - Uploadez votre document de référence original
+        - Exemple : Un rapport technique existant
         
-        ```bash
-        export GPT4O_API_KEY="votre_cle_api_gpt4o"
-        export GPT4O_ENDPOINT="https://votre-endpoint.openai.azure.com"
-        ```
+        **2. 🎨 Document exemple construit**
+        - Uploadez un exemple créé à partir de la source
+        - Exemple : Le même rapport transformé en présentation
         
-        ### 2. Préparation des documents
+        **3. 📄 Nouveau document source**
+        - Uploadez le nouveau contenu à traiter
+        - Exemple : Un nouveau rapport technique à transformer
         
-        - **Documents sources** : Contiennent les informations à utiliser
-        - **Documents exemples** : Définissent le style et la structure souhaités
-        - **Formats acceptés** : PDF, TXT, DOCX (max 10 MB)
+        **4. 💬 Description optionnelle**
+        - Ajoutez des instructions personnalisées
+        - Exemple : "Adapter le ton pour un public jeune"
         
-        ### 3. Génération
+        **5. 🧠 Génération intelligente**
+        - L'IA analyse la transformation (ancien → exemple)
+        - Applique la même transformation (nouveau → résultat)
+        - Génère un document cohérent et professionnel
         
-        1. Uploadez vos documents dans la page Génération
-        2. Décrivez précisément le document souhaité
-        3. Ajustez les paramètres si nécessaire
-        4. Lancez la génération
-        5. Prévisualisez et exportez le résultat
+        **6. 📖 Rendu et export**
+        - Prévisualisez avec rendu Markdown amélioré
+        - Exportez en PDF ou DOCX avec styles préservés
         """)
     
     with st.expander("Conseils d'utilisation", expanded=False):
@@ -307,23 +378,31 @@ def show_credits():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.info(f"**Version:** 1.0.0 MVP")
+        st.info(f"**Version:** 2.0.0 Architecture 3+1")
     
     with col2:
         st.info(f"**Dernière mise à jour:** {datetime.now().strftime('%B %Y')}")
     
     with col3:
-        st.info(f"**Statut:** Démonstration")
+        st.info(f"**Statut:** Production Ready")
     
-    # Remerciements
+    # Innovation et remerciements
     st.markdown("""
+    ### 🚀 Innovation InspireDoc
+    
+    **Architecture 3+1 révolutionnaire :**
+    - Première implémentation de transformation contextuelle intelligente
+    - L'IA comprend le **COMMENT** transformer, pas seulement le **QUOI**
+    - Génération basée sur l'analyse de patterns de transformation
+    - Interface adaptative avec thèmes sombre/clair automatiques
+    
     ### 🙏 Remerciements
     
-    Merci à toutes les technologies open source qui ont rendu ce projet possible :
-    - **Streamlit** pour l'interface utilisateur intuitive
-    - **OpenAI** pour les capacités d'IA avancées
-    - **Python** et son écosystème riche
-    - La communauté des développeurs pour les nombreuses bibliothèques utilisées
+    Merci aux technologies qui ont rendu cette innovation possible :
+    - **Streamlit** pour l'interface utilisateur moderne
+    - **OpenAI GPT-4o** pour l'intelligence artificielle avancée
+    - **Docker** pour la containerisation et le déploiement
+    - **Python** et son écosystème riche pour le développement rapide
     """)
     
     # Contact et support
@@ -337,14 +416,15 @@ def show_credits():
         2. **Consultez** la section Résolution de problèmes ci-dessus
         3. **Vérifiez** que toutes les dépendances sont installées
         
-        ### Améliorations et suggestions
+        ### Évolutions futures
         
-        Ce projet étant un MVP, de nombreuses améliorations sont possibles :
-        - Support de formats additionnels
-        - Interface multilingue
-        - Gestion de projets
-        - Base de données vectorielle
-        - Authentification utilisateur
+        InspireDoc 2.0 avec Architecture 3+1 ouvre de nouvelles possibilités :
+        - **Formats étendus** : Support d'images, tableaux complexes
+        - **IA multimodale** : Analyse de documents avec images
+        - **Templates intelligents** : Bibliothèque de transformations pré-définies
+        - **Collaboration** : Partage et versioning des transformations
+        - **API REST** : Intégration dans d'autres applications
+        - **Analytics** : Métriques sur l'efficacité des transformations
         - API REST
         
         N'hésitez pas à contribuer ou suggérer des améliorations !

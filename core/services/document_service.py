@@ -56,14 +56,20 @@ class DocumentService:
     def process_uploaded_files(self, 
                               old_source_files: List[Any],
                               example_files: List[Any],
-                              new_source_files: List[Any]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+                              new_source_files: List[Any],
+                              old_source_text: str = "",
+                              example_text: str = "",
+                              new_source_text: str = "") -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
-        Traite les fichiers uploadés (3 types de documents).
+        Traite les fichiers uploadés et/ou le texte saisi (3 types de documents).
         
         Args:
             old_source_files: Liste des documents sources anciens
             example_files: Liste des documents exemples construits
             new_source_files: Liste des nouveaux documents sources
+            old_source_text: Texte saisi pour document source ancien
+            example_text: Texte saisi pour document exemple
+            new_source_text: Texte saisi pour nouveau document source
             
         Returns:
             Tuple (old_sources, examples, new_sources)
@@ -94,7 +100,20 @@ class DocumentService:
                     if result:
                         processed_new_sources.append(result)
             
-            logger.info(f"Fichiers traités: {len(processed_old_sources)} anciens, {len(processed_examples)} exemples, {len(processed_new_sources)} nouveaux")
+            # Traitement du texte saisi directement
+            if old_source_text.strip():
+                text_doc = self._create_text_document(old_source_text, "Document source ancien (texte)", "old_source")
+                processed_old_sources.append(text_doc)
+            
+            if example_text.strip():
+                text_doc = self._create_text_document(example_text, "Document exemple (texte)", "example")
+                processed_examples.append(text_doc)
+            
+            if new_source_text.strip():
+                text_doc = self._create_text_document(new_source_text, "Nouveau document source (texte)", "new_source")
+                processed_new_sources.append(text_doc)
+            
+            logger.info(f"Documents traités: {len(processed_old_sources)} anciens, {len(processed_examples)} exemples, {len(processed_new_sources)} nouveaux")
             
             return processed_old_sources, processed_examples, processed_new_sources
             
@@ -143,7 +162,7 @@ class DocumentService:
             cleaned_result = self.text_cleaner.clean_for_llm(extracted_data['text'])
             normalized_text = self.text_normalizer.normalize_for_llm(cleaned_result)
             
-            # Métadonnées complètes
+            # Métadonnées du fichier traité
             processed_metadata = {
                 **extracted_data.get('metadata', {}),
                 'original_filename': file.name,
@@ -153,6 +172,69 @@ class DocumentService:
                 'processed_at': datetime.now().isoformat(),
                 'original_length': len(extracted_data['text']),
                 'processed_length': len(normalized_text)
+            }
+            
+            # Nettoyage du fichier temporaire
+            try:
+                os.remove(temp_path)
+            except Exception as e:
+                logger.warning(f"Impossible de supprimer le fichier temporaire {temp_path}: {str(e)}")
+            
+            logger.info(f"Fichier traité avec succès: {file.name} -> {len(normalized_text)} caractères")
+            
+            return {
+                'text': normalized_text,
+                'metadata': processed_metadata
+            }
+            
+        except Exception as e:
+            logger.error(f"Erreur lors du traitement du fichier {file.name}: {str(e)}")
+            return None
+    
+    def _create_text_document(self, text_content: str, title: str, doc_type: str) -> Dict[str, Any]:
+        """
+        Crée un document à partir de texte saisi directement.
+        
+        Args:
+            text_content: Contenu textuel
+            title: Titre du document
+            doc_type: Type de document (old_source, example, new_source)
+            
+        Returns:
+            Dictionnaire représentant le document
+        """
+        try:
+            # Nettoyage et normalisation du texte
+            cleaned_text = self.text_cleaner.clean_text(text_content)
+            normalized_text = self.text_normalizer.normalize_text(cleaned_text)
+            
+            return {
+                'title': title,
+                'content': normalized_text,
+                'original_content': text_content,
+                'file_type': 'text',
+                'file_size': len(text_content.encode('utf-8')),
+                'processed_at': datetime.now().isoformat(),
+                'document_type': doc_type,
+                'source': 'text_input',
+                'metadata': {
+                    'character_count': len(text_content),
+                    'word_count': len(text_content.split()),
+                    'line_count': len(text_content.splitlines())
+                }
+            }
+        except Exception as e:
+            logger.error(f"Erreur lors de la création du document texte: {str(e)}")
+            return {
+                'title': title,
+                'content': text_content,
+                'original_content': text_content,
+                'file_type': 'text',
+                'file_size': len(text_content.encode('utf-8')),
+                'processed_at': datetime.now().isoformat(),
+                'document_type': doc_type,
+                'source': 'text_input',
+                'error': str(e)
             }
             
             # Nettoyage du fichier temporaire

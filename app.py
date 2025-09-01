@@ -17,6 +17,23 @@ st.set_page_config(
 # CSS personnalisé
 st.markdown("""
 <style>
+    /* Masquer la navigation par défaut de Streamlit */
+    .css-1d391kg {display: none;}
+    .css-1rs6os {display: none;}
+    .css-17ziqus {display: none;}
+    .css-1v0mbdj {display: none;}
+    .css-1wbqy5l {display: none;}
+    .stSelectbox > div > div > div {display: none;}
+    
+    /* Masquer les éléments de navigation automatique */
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 0;
+    }
+    
+    section[data-testid="stSidebar"] .css-1d391kg {
+        display: none;
+    }
+    
     /* Adaptation automatique aux thèmes sombre/clair */
     .main-header {
         font-size: 3rem;
@@ -237,36 +254,8 @@ def main():
     st.markdown('<p class="sub-header">Générateur intelligent de documents basé sur l\'IA</p>', unsafe_allow_html=True)
     
     # Sidebar pour la navigation
-    with st.sidebar:
-        st.title("Navigation")
-        
-        # Menu de navigation avec boutons radio
-        page = st.radio(
-            "Choisir une page",
-            ["🏠 Accueil", "⚡ Génération", "⚙️ Paramètres", "ℹ️ À propos"],
-            index=0
-        )
-        
-        # Affichage du statut
-        st.markdown("---")
-        st.markdown("**🔧 Statut**")
-        
-        try:
-            from core.services.document_service import DocumentService
-            service = DocumentService()
-            status = service.get_service_status()
-            
-            if status.get('service_initialized', False):
-                st.success("✅ Service OK")
-            else:
-                st.error("❌ Service KO")
-                
-            if status.get('llm_connection', False):
-                st.success("✅ LLM OK")
-            else:
-                st.warning("⚠️ LLM Config")
-        except Exception:
-            st.error("❌ Erreur init")
+    from components.sidebar import show_sidebar
+    page = show_sidebar()
     
     # Routage des pages
     if page == "🏠 Accueil":
@@ -282,38 +271,82 @@ def show_home_page():
     """
     Page d'accueil.
     """
-    st.header("Bienvenue sur InspireDoc")
+    st.header("🚀 Bienvenue sur InspireDoc 2.0")
     
-    # Description
+    # Description révolutionnaire
     st.markdown("""
-    InspireDoc est un outil intelligent qui vous permet de générer automatiquement des documents 
-    en vous inspirant d'exemples existants et en utilisant vos documents sources.
+    ## 🧠 Architecture 3+1 Révolutionnaire
+    
+    InspireDoc révolutionne la génération de documents avec son **intelligence de transformation**. 
+    L'IA ne se contente plus de copier - elle **comprend** et **applique** des transformations intelligentes.
+    
+    ### 💡 Innovation unique :
+    L'IA analyse comment un document ancien a été transformé en exemple, puis applique cette même transformation sur vos nouveaux documents.
     """)
     
-    # Fonctionnalités principales
-    st.subheader("🚀 Fonctionnalités principales")
+    # Workflow 3+1
+    st.markdown("""
+    ### 🔄 Workflow Architecture 3+1
+    """)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown("""
+        <div class="feature-box">
+            <h4>📜 1. Source Ancien</h4>
+            <p>Document de référence original</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="feature-box">
+            <h4>🎨 2. Exemple Construit</h4>
+            <p>Transformation appliquée</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="feature-box">
+            <h4>📄 3. Nouveau Source</h4>
+            <p>Information à traiter</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("""
+        <div class="feature-box">
+            <h4>💬 4. Description</h4>
+            <p>Instructions optionnelles</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Fonctionnalités révolutionnaires
+    st.subheader("✨ Fonctionnalités révolutionnaires")
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
         <div class="feature-box">
-            <h4>📄 Upload de documents</h4>
-            <p>Supporté: PDF, TXT, DOCX</p>
+            <h4>🧠 Intelligence de Transformation</h4>
+            <p>L'IA comprend le COMMENT transformer, pas seulement le QUOI</p>
             <ul>
-                <li>Documents sources (contenu)</li>
-                <li>Documents exemples (style)</li>
+                <li>Analyse des patterns de transformation</li>
+                <li>Application contextuelle intelligente</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="feature-box">
-            <h4>🤖 Génération IA</h4>
-            <p>Utilise GPT-4o pour générer des documents intelligents</p>
+            <h4>📄 Upload Intelligent 3 Zones</h4>
+            <p>Architecture 3+1 révolutionnaire</p>
             <ul>
-                <li>Respect du style des exemples</li>
-                <li>Contenu basé sur les sources</li>
+                <li>Source ancien + Exemple construit + Nouveau source</li>
+                <li>Description utilisateur optionnelle</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -321,35 +354,44 @@ def show_home_page():
     with col2:
         st.markdown("""
         <div class="feature-box">
-            <h4>🎨 Rendu Markdown</h4>
-            <p>Affichage élégant et professionnel</p>
+            <h4>🎨 Rendu Adaptatif</h4>
+            <p>Interface qui s'adapte automatiquement</p>
             <ul>
-                <li>Prévisualisation en temps réel</li>
-                <li>Mise en forme préservée</li>
+                <li>Thèmes sombre/clair automatiques</li>
+                <li>Rendu Markdown professionnel</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="feature-box">
-            <h4>📥 Export multi-format</h4>
-            <p>Exportez vos documents générés</p>
+            <h4>🐳 Docker & Hot Reload</h4>
+            <p>Développement et déploiement optimisés</p>
             <ul>
-                <li>PDF avec styles personnalisés</li>
-                <li>DOCX compatible Office</li>
+                <li>Containerisation complète</li>
+                <li>Rechargement automatique</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
     
-    # Guide de démarrage rapide
-    st.subheader("🎯 Démarrage rapide")
+    # Guide Architecture 3+1
+    st.subheader("🎯 Guide Architecture 3+1")
     
     st.markdown("""
-    1. **Préparez vos documents** : Rassemblez vos documents sources (contenu) et exemples (style)
-    2. **Allez à la page Génération** : Utilisez le menu de navigation
-    3. **Uploadez vos fichiers** : Glissez-déposez ou sélectionnez vos documents
-    4. **Décrivez votre demande** : Expliquez quel type de document vous voulez générer
-    5. **Générez et exportez** : Laissez l'IA créer votre document et exportez-le
+    ### 🚀 Nouveau workflow révolutionnaire :
+    
+    1. **📜 Document source ancien** : Uploadez votre document de référence original
+    2. **🎨 Document exemple construit** : Uploadez un exemple créé à partir de la source
+    3. **📄 Nouveau document source** : Uploadez le nouveau contenu à traiter
+    4. **💬 Description optionnelle** : Ajoutez des instructions personnalisées
+    5. **🧠 Génération intelligente** : L'IA analyse la transformation et l'applique
+    6. **📖 Rendu et export** : Prévisualisez et exportez en PDF/DOCX
+    
+    ### 💡 Exemple concret :
+    - **Ancien** : Rapport technique brut
+    - **Exemple** : Le même rapport transformé en présentation
+    - **Nouveau** : Nouveau rapport technique à transformer
+    - **Résultat** : Nouvelle présentation avec le même style !
     """)
     
     # Statut du système
@@ -391,7 +433,7 @@ def show_generation_page():
     Page de génération de documents.
     """
     try:
-        from pages.generation import show_generation_interface
+        from modules.generation import show_generation_interface
         show_generation_interface()
     except ImportError as e:
         st.error(f"Erreur d'import de la page de génération: {str(e)}")
@@ -402,7 +444,7 @@ def show_settings_page():
     Page des paramètres.
     """
     try:
-        from pages.settings import show_settings_interface
+        from modules.settings import show_settings_interface
         show_settings_interface()
     except ImportError as e:
         st.error(f"Erreur d'import de la page des paramètres: {str(e)}")
@@ -413,7 +455,7 @@ def show_about_page():
     Page à propos.
     """
     try:
-        from pages.about import show_about_interface
+        from modules.about import show_about_interface
         show_about_interface()
     except ImportError as e:
         st.error(f"Erreur d'import de la page à propos: {str(e)}")
